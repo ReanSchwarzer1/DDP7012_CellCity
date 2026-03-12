@@ -3,352 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cell City - Board Game</title>
+    <title>Cell City - Game Design Document</title>
     <style>
         :root {
-            --bg-deep: #0a0e17;
-            --bg-surface: #151b2b;
-            --text-main: #e2e8f0;
+            --bg-color: #0b1120;
+            --surface-color: rgba(30, 41, 59, 0.7);
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --neon-cyan: #00f3ff;
-            --neon-green: #39ff14;
-            --danger-red: #ff3366;
-            --border-color: #2a3441;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-deep);
-            color: var(--text-main);
             margin: 0;
-            padding: 0;
-            line-height: 1.6;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            background-image: radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.05), transparent 25%),
+                              radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.05), transparent 25%);
+            overflow-x: hidden;
         }
 
+        /* Layout & Typography */
         header {
             text-align: center;
-            padding: 3rem 1rem;
-            background: linear-gradient(to bottom, #0f172a, var(--bg-deep));
-            border-bottom: 2px solid var(--neon-cyan);
-            box-shadow: 0 4px 20px rgba(0, 243, 255, 0.1);
+            padding: 4rem 2rem;
+            background: linear-gradient(to bottom, rgba(11, 17, 32, 1), rgba(11, 17, 32, 0));
         }
 
         h1 {
-            color: var(--neon-cyan);
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            font-size: 2.5rem;
-            margin: 0 0 0.5rem 0;
-            text-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+            font-size: 3.5rem;
+            margin: 0;
+            background: linear-gradient(to right, var(--accent-green), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
+        h2, h3 { color: var(--accent-green); }
+        
         .tagline {
-            font-style: italic;
+            font-size: 1.2rem;
             color: var(--text-muted);
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin: 0 auto;
+            margin-top: 0.5rem;
         }
 
-        .container {
-            max-width: 1200px;
+        main {
+            max-width: 900px;
             margin: 0 auto;
             padding: 2rem;
         }
 
-        /* Tabs Navigation */
-        .tabs {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-            margin-bottom: 2.5rem;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 1rem;
+        .card-panel {
+            background: var(--surface-color);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
-        .tab-btn {
-            background: transparent;
-            color: var(--text-muted);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 0.8rem 1.5rem;
-            cursor: pointer;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
-        }
-
-        .tab-btn:hover {
-            border-color: var(--neon-cyan);
-            color: var(--text-main);
-        }
-
-        .tab-btn.active {
-            background: rgba(0, 243, 255, 0.1);
-            color: var(--neon-cyan);
-            border-color: var(--neon-cyan);
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
-        }
-
-        /* Tab Content Sections */
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.4s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h2 {
-            color: var(--neon-cyan);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 0.5rem;
-            font-weight: 400;
-            letter-spacing: 1px;
-            margin-top: 2rem;
-        }
-
-        h3 {
-            color: var(--text-main);
-            margin-top: 1.5rem;
-        }
-
-        /* Grids for Cards and Roles */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1.5rem;
-        }
-
-        /* Card Styling */
-        .card {
-            background-color: var(--bg-surface);
-            border: 1px solid var(--border-color);
-            padding: 1.5rem;
-            border-radius: 6px;
-            position: relative;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            border-color: #3f4e63;
-        }
-
-        .card h3 {
-            margin-top: 0;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px dashed var(--border-color);
-            color: var(--neon-cyan);
-            font-size: 1.2rem;
-        }
-
-        .science-snap {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            background: rgba(0,0,0,0.2);
-            padding: 0.75rem;
-            border-radius: 4px;
-            margin-top: 1rem;
-            border-left: 2px solid var(--neon-cyan);
-            font-family: monospace;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 1.5rem;
-            background: var(--bg-surface);
-            border-radius: 6px;
-            overflow: hidden;
-        }
-
-        th, td {
-            border: 1px solid var(--border-color);
-            padding: 1rem;
-            text-align: left;
-        }
-
-        th {
-            background-color: rgba(0, 243, 255, 0.05);
-            color: var(--neon-cyan);
-            font-weight: 600;
-        }
-
-        .highlight-green { color: var(--neon-green); font-weight: bold; }
-        .highlight-red { color: var(--danger-red); font-weight: bold; }
-
-        ul { padding-left: 1.5rem; }
-        li { margin-bottom: 0.5rem; }
-
-        /* Player Mat Specific Styles */
-        .player-mat {
-            background-color: var(--bg-surface);
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
-            display: grid;
-            grid-template-areas: 
-                "header header"
-                "resources proteins"
-                "tracker tracker";
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-        
-        @media (max-width: 768px) {
-            .player-mat {
-                grid-template-areas: 
-                    "header"
-                    "resources"
-                    "proteins"
-                    "tracker";
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .mat-header { 
-            grid-area: header; 
-            border-bottom: 1px solid var(--border-color); 
-            padding-bottom: 1rem;
-        }
-        .mat-header h3 { color: var(--neon-cyan); margin: 0; font-size: 1.5rem; }
-        .mat-header p { color: var(--text-muted); margin: 0.5rem 0 0 0; font-style: italic; }
-
-        .mat-resources { grid-area: resources; }
-        .resource-slot {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-        .slot-circle {
-            width: 45px; height: 45px;
-            border-radius: 50%;
-            border: 2px dashed var(--text-muted);
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(0,0,0,0.2);
-        }
-        .slot-circle.glucose { border-color: #3498db; }
-        .slot-circle.amino { border-color: var(--neon-green); }
-        .slot-circle.atp { border-color: #f1c40f; }
-
-        .mat-proteins { grid-area: proteins; }
-        .protein-slot-container {
-            display: flex; gap: 1rem; flex-wrap: wrap;
-        }
-        .protein-slot-box {
-            width: 90px; height: 130px;
-            border: 2px dashed var(--text-muted);
-            border-radius: 6px;
-            display: flex; align-items: center; justify-content: center;
-            text-align: center; font-size: 0.85rem; color: var(--text-muted);
-            background: rgba(0,0,0,0.2);
-            padding: 0.5rem;
-        }
-
-        .mat-tracker { 
-            grid-area: tracker; 
-            border-top: 1px solid var(--border-color); 
-            padding-top: 1rem;
-        }
-        .lp-track {
-            display: flex;
-            gap: 4px;
-            overflow-x: auto;
-            padding-bottom: 0.5rem;
-        }
-        .lp-box {
-            min-width: 32px; height: 32px;
-            background: rgba(0, 243, 255, 0.05);
-            border: 1px solid var(--border-color);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.85rem; color: var(--text-main);
-            border-radius: 4px;
-        }
-
-        /* Interactive Clock UI */
-        .clock-container {
-            background: var(--bg-surface);
-            border: 2px solid var(--neon-cyan);
-            border-radius: 8px;
-            padding: 1.5rem;
-            text-align: center;
-            margin: 1.5rem 0;
-            max-width: 400px;
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.15);
-        }
-
-        .clock-display {
-            font-size: 3rem;
-            font-weight: bold;
-            color: var(--neon-green);
-            margin: 1rem 0;
-            text-shadow: 0 0 10px rgba(57, 255, 20, 0.5);
-        }
-
+        /* Buttons */
         .btn {
-            background: transparent;
-            color: var(--text-main);
-            border: 1px solid var(--neon-cyan);
-            padding: 0.5rem 1rem;
-            margin: 0 0.5rem;
-            cursor: pointer;
-            border-radius: 4px;
-            text-transform: uppercase;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-
-        .btn:hover {
-            background: var(--neon-cyan);
-            color: var(--bg-deep);
-        }
-        
-        .btn-danger {
-            border-color: var(--danger-red);
-        }
-        .btn-danger:hover {
-            background: var(--danger-red);
-        }
-
-        /* Interactive Deck UI */
-        .deck-area {
-            display: flex;
-            gap: 2rem;
-            justify-content: flex-start;
-            margin-top: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .deck-zone {
-            flex: 1;
-            min-width: 300px;
-            max-width: 400px;
-            border: 1px dashed var(--border-color);
-            padding: 1.5rem;
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
             border-radius: 8px;
-            text-align: center;
-            background: rgba(0,0,0,0.1);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            font-weight: bold;
         }
 
-        .drawn-card {
-            margin-top: 1rem;
-            min-height: 150px;
+        .btn:hover { background: #2563eb; transform: translateY(-2px); }
+        
+        .btn-floating {
+            position: fixed;
+            bottom: 2rem;
+            border-radius: 50px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+        }
+
+        .btn-draw { right: 15rem; background: var(--accent-yellow); color: #000; }
+        .btn-draw:hover { background: #d97706; }
+        
+        .btn-drawer { right: 2rem; }
+
+        /* Overlays & Modals */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s ease;
+            z-index: 999;
+        }
+
+        .overlay.active { opacity: 1; visibility: visible; }
+
+        /* Event Card Modal */
+        #event-modal {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -40%);
+            width: 90%;
+            max-width: 400px;
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 2px solid var(--accent-yellow);
+            border-radius: 12px;
+            padding: 2rem;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        #event-modal.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%);
+        }
+
+        #event-title { color: var(--accent-yellow); margin-top: 0; font-size: 1.5rem; }
+        #event-effect { font-size: 1.1rem; margin: 1.5rem 0; line-height: 1.5; }
+        #event-science { font-size: 0.9rem; color: var(--text-muted); font-style: italic; margin-bottom: 2rem; }
+
+        /* Card Drawer */
+        #card-drawer {
+            position: fixed;
+            top: 0; right: -450px; width: 400px; height: 100%;
+            background: #1e293b;
+            border-left: 2px solid var(--accent-blue);
+            box-shadow: -5px 0 25px rgba(0,0,0,0.5);
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
             display: flex;
+            flex-direction: column;
+        }
+
+        #card-drawer.open { right: 0; }
+
+        .drawer-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
+        }
+
+        .drawer-header h3 { margin: 0; color: white; }
+        
+        .close-btn {
+            background: none; border: none; color: var(--text-muted);
+            font-size: 1.5rem; cursor: pointer;
+        }
+        .close-btn:hover { color: white; }
+
+        .drawer-content {
+            padding: 1.5rem; overflow-y: auto; display: flex;
+            flex-direction: column; gap: 1rem;
+        }
+
+        /* Game Cards UI */
+        .game-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .game-card h4 { margin: 0 0 0.5rem 0; color: var(--accent-green); font-size: 1.2rem; }
+        .game-card .cost { font-size: 0.85rem; color: var(--accent-red); font-weight: bold; margin-bottom: 0.5rem; }
+        .game-card .effect { font-size: 0.95rem; margin-bottom: 0.5rem; }
+        .game-card .lore { font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
+
+        /* Info Grid */
+        .grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;
         }
     </style>
 </head>
@@ -356,422 +195,150 @@
 
     <header>
         <h1>Cell City</h1>
-        <p class="tagline">"The cell is a city. You are its officials. But something has gotten past the membrane..."</p>
+        <div class="tagline">Cooperative Hidden-Role Biology Simulator</div>
     </header>
 
-    <div class="container">
-        <div class="tabs">
-            <button class="tab-btn active" onclick="openTab('overview')">Overview & Setup</button>
-            <button class="tab-btn" onclick="openTab('roles')">Roles & Allegiance</button>
-            <button class="tab-btn" onclick="openTab('mats')">Player Mats & Quick Start</button>
-            <button class="tab-btn" onclick="openTab('gameplay')">Gameplay & Events</button>
-            <button class="tab-btn" onclick="openTab('proteins')">Proteins & Resources</button>
-            <button class="tab-btn" onclick="openTab('education')">Education</button>
-            <button class="tab-btn" onclick="openTab('interactive')">Interactive Tools</button>
-        </div>
+    <main>
+        <section class="card-panel">
+            <h2>Overview</h2>
+            <p>You play as cell scientists operating within a gigantic model cell, remotely piloting organelles to keep it alive. You all win together if the cell stays healthy and completes enough useful proteins before time runs out.</p>
+            <p>Beware: One player may secretly be the <strong>Virus</strong>, trying to push the cell toward collapse by misusing organelles and letting Waste build up.</p>
+        </section>
 
-        <div id="overview" class="tab-content active">
-            <h2>What Is Cell City?</h2>
-            <p>Cell City is a board game about a living cell. You and your friends each play as a different organelle, a tiny part of the cell that does a specific job. You work together like a team running a city.</p>
-            <p><strong>The Twist:</strong> One player is secretly a virus. They look like a normal organelle, but they're actually trying to destroy the cell from the inside, by wasting resources, letting trash pile up, or quietly sabotaging the team.</p>
-            
-            <h3>Game Information</h3>
-            <table>
-                <tr><th>Players</th><td>4-6</td></tr>
-                <tr><th>Time</th><td>20-30 minutes</td></tr>
-                <tr><th>Ages</th><td>11+</td></tr>
-                <tr><th>Genre</th><td>Team game with a secret traitor</td></tr>
-                <tr><th>Subject</th><td>Cell biology (NCERT Grade 8)</td></tr>
-            </table>
-
-            <h3>Win Conditions</h3>
-            <ul>
-                <li><span class="highlight-green">Healthy Players Win If:</span> The Clock reaches Round 8 (Survival) OR all Viral Agents are correctly exiled. The player with the most LP is the Grand Winner.</li>
-                <li><span class="highlight-red">The Virus Wins If:</span> Total Waste on the board reaches 12 (Toxic Overload), ATP hits 0 and no Glucose is left anywhere (Energy Death), OR 2 or more Healthy players are wrongly exiled (Autoimmune Collapse).</li>
-            </ul>
-        </div>
-
-        <div id="roles" class="tab-content">
-            <h2>Setup & Allegiance</h2>
-            <p>At the start, shuffle the Allegiance Cards and deal one face-down to each player (this tells you whether you're Healthy or a Virus; keep it secret).</p>
-            <table>
-                <tr><th>Player Count</th><th>Healthy Players</th><th>Virus Players</th></tr>
-                <tr><td>4</td><td>3</td><td>1</td></tr>
-                <tr><td>5</td><td>4</td><td>1</td></tr>
-                <tr><td>6</td><td>4</td><td>2</td></tr>
-            </table>
-
-            <h2>The 5 Core Roles (+1 Expansion)</h2>
+        <section class="card-panel">
+            <h2>Core Mechanics</h2>
             <div class="grid">
-                <div class="card">
-                    <h3>The Director (Nucleus)</h3>
-                    <p><strong>What you do:</strong> You control the blueprints. When anyone wants to build a protein, they need an Instruction Card, and you're the one who hands them out.</p>
-                    <p><strong>Your power:</strong> When you draw Instruction Cards, draw 3 and keep 2. Everyone else draws 2 and keeps 1.</p>
-                    <div class="science-snap">SYS.NOTE: The nucleus holds DNA, the instructions for building every protein the cell needs.</div>
-                </div>
-                <div class="card">
-                    <h3>The Engineer (Mitochondria)</h3>
-                    <p><strong>What you do:</strong> You turn Glucose into ATP (energy). Without you, nobody can do anything; every action in the game costs ATP.</p>
-                    <p><strong>Your power:</strong> When you convert Glucose into ATP, you make 1 extra ATP. (You get 4 ATP from 2 Glucose. Everyone else gets 3.)</p>
-                    <div class="science-snap">SYS.NOTE: Mitochondria perform cellular respiration, turning sugar into usable energy.</div>
-                </div>
-                <div class="card">
-                    <h3>The Builder (ER + Ribosomes)</h3>
-                    <p><strong>What you do:</strong> You build proteins. When a player has an Instruction Card and the right resources, you process it at the ER to earn Life Points.</p>
-                    <p><strong>Your power:</strong> When you build a protein, roll a die. On a 3 or higher, it's a High-Quality Protein, worth 2 extra LP.</p>
-                    <div class="science-snap">SYS.NOTE: Rough ER has ribosomes on its surface and assembles proteins from amino acids.</div>
-                </div>
-                <div class="card">
-                    <h3>The Recycler (Lysosome)</h3>
-                    <p><strong>What you do:</strong> You clean up Waste. Waste accumulates each round, and if it gets too high, the cell dies.</p>
-                    <p><strong>Your power:</strong> Every round, you automatically remove 2 Waste from the board at no cost and with no action needed.</p>
-                    <div class="science-snap">SYS.NOTE: Lysosomes break down waste, damaged parts, and even invading bacteria.</div>
-                </div>
-                <div class="card">
-                    <h3>The Gatekeeper (Cell Membrane)</h3>
-                    <p><strong>What you do:</strong> You control the door. Each round, you draw resource tokens from the Supply and decide who gets what.</p>
-                    <p><strong>Your power:</strong> You draw 2 extra resource tokens from the Supply each round compared to the base amount.</p>
-                    <div class="science-snap">SYS.NOTE: The cell membrane is selectively permeable; it decides what enters and exits the cell.</div>
-                </div>
-                <div class="card">
-                    <h3>The Courier (Golgi Apparatus)</h3>
-                    <p><em>Only used in 5-6 player games.</em></p>
-                    <p><strong>What you do:</strong> You deliver finished proteins.</p>
-                    <p><strong>Your power:</strong> When you deliver a protein, you and the player who receives it both gain +1 LP.</p>
-                    <div class="science-snap">SYS.NOTE: The Golgi apparatus packages proteins into vesicles and ships them where needed.</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="mats" class="tab-content">
-            <h2>Player Mats Layout</h2>
-            <p>Each player receives a laminated, dry-erase compatible mat (A5 size) to organize their game area, track resources, and display their role. Below is a digital mock-up of how the physical mats are structured.</p>
-            
-            <div class="player-mat">
-                <div class="mat-header">
-                    <h3>MITOCHONDRIA: The Engineer</h3>
-                    <p><strong>Power:</strong> You get 4 ATP from 2 Glucose instead of 3.</p>
-                </div>
-                
-                <div class="mat-resources">
-                    <h4 style="margin-top: 0; color: var(--text-main);">Resource Storage</h4>
-                    <div class="resource-slot">
-                        <div class="slot-circle glucose"></div>
-                        <span>Glucose Tokens (Blue)</span>
-                    </div>
-                    <div class="resource-slot">
-                        <div class="slot-circle amino"></div>
-                        <span>Amino Acids (Green)</span>
-                    </div>
-                    <div class="resource-slot">
-                        <div class="slot-circle atp"></div>
-                        <span>ATP Tokens (Yellow)</span>
-                    </div>
-                </div>
-
-                <div class="mat-proteins">
-                    <h4 style="margin-top: 0; color: var(--text-main);">Protein Slots</h4>
-                    <div class="protein-slot-container">
-                        <div class="protein-slot-box">Active Instruction Card</div>
-                        <div class="protein-slot-box">Completed Protein</div>
-                        <div class="protein-slot-box">Completed Protein</div>
-                    </div>
-                </div>
-
-                <div class="mat-tracker">
-                    <h4 style="margin-top: 0; color: var(--text-main);">Life Points (LP) Track</h4>
-                    <div class="lp-track">
-                        <script>
-                            for(let i=0; i<=30; i++) {
-                                document.write('<div class="lp-box">' + i + '</div>');
-                            }
-                        </script>
-                    </div>
-                </div>
-            </div>
-
-            <h2>Quick-Start Guide</h2>
-            <div class="card" style="margin-top: 1rem;">
-                <p><strong>SETUP:</strong> Deal each player 1 Role Card (face-up) and 1 Allegiance Card (face-down, keep secret). Set out tokens. Shuffle both decks.</p>
-                <hr style="border-color: var(--border-color); margin: 1rem 0;">
-                <p><strong>EACH ROUND (4 steps):</strong></p>
-                <ol>
-                    <li>Flip an Event Card. Do what it says.</li>
-                    <li>The Gatekeeper hands out Glucose and Amino Acids.</li>
-                    <li>Each player takes a turn: pick 2 actions (make energy, get blueprints, build proteins, clean waste, or trade). Then gain 1 Waste.</li>
-                    <li>Check: Waste ≥ 12? ATP = 0? → Virus wins. Clock hits 8? → Healthy wins.</li>
-                </ol>
-                <hr style="border-color: var(--border-color); margin: 1rem 0;">
-                <p><strong>THE SECRET:</strong> One of you is a Virus. They win if the cell dies. Spend 1 Immunity Token to accuse someone, but if you're wrong, the cell takes damage.</p>
-            </div>
-        </div>
-
-        <div id="gameplay" class="tab-content">
-            <h2>The Cell Scan (Catching the Virus)</h2>
-            <p>If you think someone is a virus, you can accuse them. This is the loudest, most dramatic part of the game.</p>
-            <ul>
-                <li>Spend 1 Immunity Token and point at someone. Say: "I think YOU are the virus."</li>
-                <li>30-second argument. The accuser says why. The accused defends themselves. Everyone else talks.</li>
-                <li>Vote. Everyone shows a thumbs-up (exile) or a thumbs-down (safe). The majority wins. Ties = safe.</li>
-                <li><strong>Reveal:</strong>
-                    <ul>
-                        <li><span class="highlight-green">If they ARE a Virus:</span> They're out! Remove 3 Waste from the board.</li>
-                        <li><span class="highlight-red">If they're Healthy:</span> They're out! Add 3 Waste to the board. The accuser loses 2 LP. (This represents an autoimmune response).</li>
-                    </ul>
-                </li>
-            </ul>
-
-            <h2>The Event Deck</h2>
-            <div class="grid">
-                <div class="card"><h3>Adrenaline Rush</h3><p>The Engineer makes +2 extra ATP this round.</p></div>
-                <div class="card"><h3>Diffusion Gradient</h3><p>The Gatekeeper draws 4 extra resources to hand out.</p></div>
-                <div class="card"><h3>Active Transport</h3><p>Anyone can trade 1 ATP for 3 Amino Acids this round.</p></div>
-                <div class="card"><h3>Immune Boost</h3><p>Every player gains 1 Immunity Token.</p></div>
-                <div class="card"><h3>Viral Protease</h3><p>Every player loses 1 Protein (if they have one).</p></div>
-                <div class="card"><h3>Lysosomal Leak</h3><p>Everyone gains +2 Waste.</p></div>
-                <div class="card"><h3>Ribosome Strike</h3><p>Building proteins costs +1 Amino Acid this round.</p></div>
-                <div class="card"><h3>Thermal Stress</h3><p>Every player discards 1 resource of their choice.</p></div>
-                <div class="card"><h3>Membrane Breach</h3><p>The Gatekeeper must spend 2 ATP to seal it, or everyone gains +3 Waste.</p></div>
-            </div>
-        </div>
-
-        <div id="proteins" class="tab-content">
-            <h2>Resources</h2>
-            <table>
-                <tr>
-                    <th>Resource</th>
-                    <th>What It Looks Like</th>
-                    <th>What It Does</th>
-                </tr>
-                <tr>
-                    <td>Glucose</td>
-                    <td>Blue hexagons</td>
-                    <td>Fuel. The Engineer turns it into ATP.</td>
-                </tr>
-                <tr>
-                    <td>Amino Acids</td>
-                    <td>Green beads</td>
-                    <td>Building blocks. Needed to build proteins.</td>
-                </tr>
-                <tr>
-                    <td>ATP</td>
-                    <td>Yellow lightning bolts</td>
-                    <td>Energy. You spend it to do almost anything.</td>
-                </tr>
-                <tr>
-                    <td>Waste</td>
-                    <td>Brown sludge tokens</td>
-                    <td>Bad stuff. Piles up every round. Too much = game over.</td>
-                </tr>
-            </table>
-
-            <h2>The Protein Deck</h2>
-            <div class="grid">
-                <div class="card">
-                    <h3>Hemoglobin</h3>
-                    <p><strong>Cost:</strong> 3 Amino Acids + 1 ATP</p>
-                    <p><strong>Yield:</strong> 5 LP | <strong>Bonus:</strong> Gain 1 free ATP next round.</p>
-                    <div class="science-snap">SYS.NOTE: Carries oxygen in red blood cells.</div>
-                </div>
-                <div class="card">
-                    <h3>Insulin</h3>
-                    <p><strong>Cost:</strong> 2 Amino Acids + 1 ATP</p>
-                    <p><strong>Yield:</strong> 4 LP | <strong>Bonus:</strong> Instantly gain 1 Glucose.</p>
-                </div>
-                <div class="card">
-                    <h3>Keratin</h3>
-                    <p><strong>Cost:</strong> 2 Amino Acids</p>
-                    <p><strong>Yield:</strong> 3 LP | <strong>Bonus:</strong> Ignore the next Hazard event that hits you.</p>
-                    <div class="science-snap">SYS.NOTE: Forms the structure of hair and nails.</div>
-                </div>
-                <div class="card">
-                    <h3>Digestive Enzyme</h3>
-                    <p><strong>Cost:</strong> 1 Amino Acid + 2 ATP</p>
-                    <p><strong>Yield:</strong> 3 LP | <strong>Bonus:</strong> Remove 3 Waste from the board.</p>
-                </div>
-                <div class="card">
-                    <h3>Antibody</h3>
-                    <p><strong>Cost:</strong> 1 Amino Acid + 1 ATP</p>
-                    <p><strong>Yield:</strong> 2 LP | <strong>Bonus:</strong> Gain 2 Immunity Tokens.</p>
-                </div>
-                <div class="card">
-                    <h3>Collagen</h3>
-                    <p><strong>Cost:</strong> 3 Amino Acids</p>
-                    <p><strong>Yield:</strong> 4 LP | <strong>Bonus:</strong> +1 LP every time you build a protein from now on.</p>
-                </div>
-                <div class="card">
-                    <h3>Melanin</h3>
-                    <p><strong>Cost:</strong> 1 Amino Acid</p>
-                    <p><strong>Yield:</strong> 2 LP | <strong>Bonus:</strong> Your ATP can't be lost to Hazard events for 2 rounds.</p>
-                </div>
-                <div class="card">
-                    <h3>Muscle Actin</h3>
-                    <p><strong>Cost:</strong> 3 Amino Acids + 2 ATP</p>
-                    <p><strong>Yield:</strong> 6 LP | <strong>Bonus:</strong> Your actions cost no ATP for the rest of this round.</p>
-                </div>
-            </div>
-        </div>
-
-        <div id="education" class="tab-content">
-            <h2>What Kids Learn (Without Realising It)</h2>
-            <p>Biology isn't a quiz. It IS the game. Every mechanic maps to a real cell process:</p>
-            <table>
-                <tr>
-                    <th>What Happens in the Game</th>
-                    <th>What It Teaches</th>
-                </tr>
-                <tr>
-                    <td>The Engineer turns Glucose into ATP</td>
-                    <td>Cellular respiration, mitochondria convert sugar into energy</td>
-                </tr>
-                <tr>
-                    <td>The Gatekeeper decides who gets resources</td>
-                    <td>The cell membrane is selectively permeable</td>
-                </tr>
-                <tr>
-                    <td>The Builder makes proteins from Amino Acids</td>
-                    <td>Ribosomes and the ER assemble proteins from amino acid chains</td>
-                </tr>
-                <tr>
-                    <td>Waste builds up and can kill the cell</td>
-                    <td>Apoptosis, programmed cell death from accumulated damage</td>
-                </tr>
-                <tr>
-                    <td>The Recycler cleans waste</td>
-                    <td>Lysosomes break down waste and damaged cell parts</td>
-                </tr>
-                <tr>
-                    <td>The Virus pretends to be an organelle</td>
-                    <td>Viruses hijack cells by disguising themselves and exploiting cellular machinery</td>
-                </tr>
-                <tr>
-                    <td>A wrong accusation damages the cell</td>
-                    <td>In autoimmune diseases, the immune system attacks the body's own cells</td>
-                </tr>
-                <tr>
-                    <td>Everyone depends on each other</td>
-                    <td>Organelles work together; no single part can keep a cell alive alone</td>
-                </tr>
-            </table>
-        </div>
-
-        <div id="interactive" class="tab-content">
-            <h2>Digital Assisant Tools</h2>
-            <p>Use these tools to help track your physical board game state and draw cards if you don't have the physical decks handy. </p>
-            
-            <div class="clock-container">
-                <h3 style="margin-top: 0; color: var(--text-main);">Cell Cycle Clock</h3>
-                <div class="clock-display">ROUND <span id="round-number">1</span></div>
-                <p style="font-size: 0.85rem; color: var(--text-muted);">Survive until Round 8 to win! </p>
                 <div>
-                    <button class="btn" onclick="advanceClock()">Next Round</button>
-                    <button class="btn btn-danger" onclick="resetClock()">Reset Clock</button>
+                    <h3>1. Resource Flow</h3>
+                    <p>Convert Glucose into ATP, and use ATP and Amino Acids to synthesize Proteins. Watch out for Waste by-products!</p>
                 </div>
-                <div id="clock-alert" style="margin-top: 1rem; font-weight: bold; color: var(--neon-cyan);"></div>
+                <div>
+                    <h3>2. Movement & Actions</h3>
+                    <p>Walk to an organelle, run its function, then move on. You are not locked to a single organelle.</p>
+                </div>
+                <div>
+                    <h3>3. The Waste Tower</h3>
+                    <p>Every action produces waste. If the Waste Tower reaches 12 discs, the cell undergoes lysis and the Virus wins.</p>
+                </div>
+                <div>
+                    <h3>4. Cell Scan</h3>
+                    <p>Use Immunity Tokens to initiate a table-wide vote to eject a suspected Virus. Be careful—wrongly accusing a healthy scientist damages the cell!</p>
+                </div>
             </div>
+        </section>
+    </main>
 
-            <h2 style="margin-top: 3rem;">Digital Card Drawer</h2>
-            <p>Randomly pull from the 18 Event Cards or the 16 Protein Cards. </p>
-            <div class="deck-area">
-                <div class="deck-zone">
-                    <h3 style="color: var(--danger-red); margin-top:0;">Event Deck</h3>
-                    <button class="btn btn-danger" onclick="drawEvent()">Draw Event Card</button>
-                    <div class="drawn-card" id="event-display">
-                        <p style="color: var(--text-muted);">Card will appear here...</p>
-                    </div>
-                </div>
-                <div class="deck-zone">
-                    <h3 style="color: var(--neon-cyan); margin-top:0;">Protein Deck</h3>
-                    <button class="btn" onclick="drawProtein()">Draw Protein Card</button>
-                    <div class="drawn-card" id="protein-display">
-                        <p style="color: var(--text-muted);">Card will appear here...</p>
-                    </div>
-                </div>
-            </div>
+    <button class="btn btn-floating btn-draw" onclick="drawRandomEvent()">⚡ Draw Event Card</button>
+    <button class="btn btn-floating btn-drawer" onclick="toggleDrawer()">🃏 Open Protein Cards</button>
+
+    <div id="main-overlay" class="overlay" onclick="closeAll()"></div>
+
+    <div id="event-modal">
+        <h3 id="event-title">Event Name</h3>
+        <div id="event-effect"><strong>Effect:</strong> Something happens here.</div>
+        <div id="event-science">Science Snap: The biological reason why.</div>
+        <button class="btn" style="background: var(--surface-color); border: 1px solid var(--accent-yellow); color: var(--accent-yellow);" onclick="closeAll()">Acknowledge</button>
+    </div>
+
+    <div id="card-drawer">
+        <div class="drawer-header">
+            <h3>Instruction Cards</h3>
+            <button class="close-btn" onclick="toggleDrawer()">&times;</button>
         </div>
+        <div class="drawer-content">
+            
+            <div class="game-card">
+                <h4>Hemoglobin</h4>
+                <div class="cost">Cost: 3 AA, 1 ATP</div>
+                <div class="effect"><strong>Effect:</strong> +5 Cell Life; gain 1 ATP at the start of the next round.</div>
+                <div class="lore">Science: Carries oxygen in blood, improving energy supply.</div>
+            </div>
 
+            <div class="game-card">
+                <h4>Insulin</h4>
+                <div class="cost">Cost: 2 AA, 1 ATP</div>
+                <div class="effect"><strong>Effect:</strong> +4 Cell Life; immediately give 1 Glucose to up to 2 different players.</div>
+                <div class="lore">Science: Helps cells take up glucose.</div>
+            </div>
+
+            <div class="game-card">
+                <h4>Membrane Channel Protein</h4>
+                <div class="cost">Cost: 2 AA, 1 ATP</div>
+                <div class="effect"><strong>Effect:</strong> +3 Cell Life; for the rest of this round, each Grab Bag Pull may discard one Toxin for free.</div>
+                <div class="lore">Science: Channels let specific substances cross membranes safely.</div>
+            </div>
+
+        </div>
     </div>
 
     <script>
-        // Tab switching logic
-        function openTab(tabId) {
-            const contents = document.querySelectorAll('.tab-content');
-            contents.forEach(content => content.classList.remove('active'));
+        // Game Data: Event Cards
+        const eventCards = [
+            {
+                title: "Nutrient Rush",
+                effect: "Each player gains 1 Glucose from the supply. Add 1 Waste to the common pool.",
+                science: "Science Snap: After a meal, blood sugar spikes and cells get a short nutrient surplus."
+            },
+            {
+                title: "Glucose Crash",
+                effect: "Every player discards 1 Glucose (if able). If a player has none, Cell Life −1.",
+                science: "Science Snap: Long gaps between meals can leave cells short of fuel."
+            },
+            {
+                title: "Adrenaline Surge",
+                effect: "This round, Make Energy yields +1 extra ATP (2 Glucose → 4 ATP) for everyone. At End-of-Round Check, add 2 Waste to the tower.",
+                science: "Science Snap: Stress hormones push mitochondria to produce energy faster, but also increase by-products."
+            },
+            {
+                title: "Membrane Breach",
+                effect: "Immediately add 3 Waste to the tower. Then players must spend a total of 3 ATP to 'seal' the breach. If they can’t, add +2 Waste more and Cell Life −2.",
+                science: "Science Snap: A damaged membrane leaks ions and molecules, harming the cell."
+            },
+            {
+                title: "Viral Protease Attack",
+                effect: "Each player discards 1 completed Protein if they have any. Then Cell Life −3.",
+                science: "Science Snap: Viruses use enzymes to cut host proteins and repurpose cell machinery."
+            },
+            {
+                title: "Autophagy Cleanup",
+                effect: "Remove 4 Waste from the tower and +2 Cell Life. Players must collectively discard 2 resources (any types).",
+                science: "Science Snap: Cells sometimes break down their own parts to recycle materials and survive."
+            }
+        ];
 
-            const buttons = document.querySelectorAll('.tab-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
-
-            document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
-        }
-
-        // Clock Logic
-        let currentRound = 1;
-        const maxRounds = 8;
-        
-        function advanceClock() {
-            if (currentRound < maxRounds) {
-                currentRound++;
-                document.getElementById('round-number').innerText = currentRound;
-                document.getElementById('clock-alert').innerText = "";
-                
-                if (currentRound === maxRounds) {
-                    document.getElementById('clock-alert').innerText = "CELL SURVIVED! Healthy players win!";
-                    document.getElementById('clock-alert').style.color = "var(--neon-green)";
-                }
+        // UI Functions
+        function toggleDrawer() {
+            const drawer = document.getElementById('card-drawer');
+            const overlay = document.getElementById('main-overlay');
+            const isOpen = drawer.classList.contains('open');
+            
+            if (isOpen) {
+                closeAll();
+            } else {
+                drawer.classList.add('open');
+                overlay.classList.add('active');
             }
         }
 
-        function resetClock() {
-            currentRound = 1;
-            document.getElementById('round-number').innerText = currentRound;
-            document.getElementById('clock-alert').innerText = "";
+        function drawRandomEvent() {
+            // Pick a random event
+            const randomIndex = Math.floor(Math.random() * eventCards.length);
+            const card = eventCards[randomIndex];
+
+            // Populate Modal
+            document.getElementById('event-title').innerText = card.title;
+            document.getElementById('event-effect').innerHTML = `<strong>Effect:</strong> ${card.effect}`;
+            document.getElementById('event-science').innerText = card.science;
+
+            // Show Modal & Overlay
+            document.getElementById('event-modal').classList.add('active');
+            document.getElementById('main-overlay').classList.add('active');
         }
 
-        // Deck Logic
-        const events = [
-            { title: "Adrenaline Rush", text: "The Engineer makes +2 extra ATP this round." },
-            { title: "Diffusion Gradient", text: "The Gatekeeper draws 4 extra resources to hand out." },
-            { title: "Active Transport", text: "Anyone can trade 1 ATP for 3 Amino Acids this round." },
-            { title: "Immune Boost", text: "Every player gains 1 Immunity Token." },
-            { title: "Viral Protease", text: "Every player loses 1 Protein (if they have one)." },
-            { title: "Lysosomal Leak", text: "Everyone gains +2 Waste." },
-            { title: "Ribosome Strike", text: "Building proteins costs +1 Amino Acid this round." },
-            { title: "Thermal Stress", text: "Every player discards 1 resource of their choice." },
-            { title: "Membrane Breach", text: "The Gatekeeper must spend 2 ATP to seal it, or everyone gains +3 Waste." }
-        ];
-
-        const proteins = [
-            { title: "Hemoglobin", cost: "3 Amino Acids + 1 ATP", yield: "5 LP", bonus: "Gain 1 free ATP next round." },
-            { title: "Insulin", cost: "2 Amino Acids + 1 ATP", yield: "4 LP", bonus: "Instantly gain 1 Glucose." },
-            { title: "Keratin", cost: "2 Amino Acids", yield: "3 LP", bonus: "Ignore the next Hazard event that hits you." },
-            { title: "Digestive Enzyme", cost: "1 Amino Acid + 2 ATP", yield: "3 LP", bonus: "Remove 3 Waste from the board." },
-            { title: "Antibody", cost: "1 Amino Acid + 1 ATP", yield: "2 LP", bonus: "Gain 2 Immunity Tokens." },
-            { title: "Collagen", cost: "3 Amino Acids", yield: "4 LP", bonus: "+1 LP every time you build a protein from now on." },
-            { title: "Melanin", cost: "1 Amino Acid", yield: "2 LP", bonus: "Your ATP can't be lost to Hazard events for 2 rounds." },
-            { title: "Muscle Actin", cost: "3 Amino Acids + 2 ATP", yield: "6 LP", bonus: "Your actions cost no ATP for the rest of this round." }
-        ];
-
-        function drawEvent() {
-            const card = events[Math.floor(Math.random() * events.length)];
-            document.getElementById('event-display').innerHTML = `
-                <div class="card" style="width: 100%; border-left: 4px solid var(--danger-red); background: var(--bg-surface); text-align: left;">
-                    <h3 style="color: var(--danger-red); border-bottom: 1px dashed var(--border-color); padding-bottom: 0.5rem; margin-top: 0;">${card.title}</h3>
-                    <p style="margin-bottom: 0;">${card.text}</p>
-                </div>
-            `;
-        }
-
-        function drawProtein() {
-            const card = proteins[Math.floor(Math.random() * proteins.length)];
-            document.getElementById('protein-display').innerHTML = `
-                <div class="card" style="width: 100%; border-left: 4px solid var(--neon-cyan); background: var(--bg-surface); text-align: left;">
-                    <h3 style="color: var(--neon-cyan); border-bottom: 1px dashed var(--border-color); padding-bottom: 0.5rem; margin-top: 0;">${card.title}</h3>
-                    <p style="margin: 0.5rem 0 0 0;"><strong>Cost:</strong> ${card.cost}</p>
-                    <p style="margin: 0.2rem 0;"><strong>Yield:</strong> ${card.yield}</p>
-                    <p style="margin: 0;"><strong>Bonus:</strong> ${card.bonus}</p>
-                </div>
-            `;
+        function closeAll() {
+            document.getElementById('card-drawer').classList.remove('open');
+            document.getElementById('event-modal').classList.remove('active');
+            document.getElementById('main-overlay').classList.remove('active');
         }
     </script>
 </body>
