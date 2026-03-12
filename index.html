@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cell City - Game Design Document</title>
+    <title>Cell City - Card Hub</title>
     <style>
         :root {
             --bg-color: #0b1120;
-            --surface-color: rgba(30, 41, 59, 0.7);
+            --surface-color: rgba(30, 41, 59, 0.85);
             --accent-green: #10b981;
             --accent-blue: #3b82f6;
             --accent-red: #ef4444;
             --accent-yellow: #f59e0b;
+            --accent-purple: #8b5cf6;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
         }
@@ -21,215 +22,154 @@
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            background-image: radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.05), transparent 25%),
-                              radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.05), transparent 25%);
-            overflow-x: hidden;
+            background-image: radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.08), transparent 40%),
+                              radial-gradient(circle at 80% 30%, rgba(59, 130, 246, 0.08), transparent 40%);
+            overflow: hidden; /* Prevent background scrolling */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         /* Layout & Typography */
-        header {
-            text-align: center;
-            padding: 4rem 2rem;
-            background: linear-gradient(to bottom, rgba(11, 17, 32, 1), rgba(11, 17, 32, 0));
-        }
-
+        header { text-align: center; margin-bottom: 3rem; }
+        
         h1 {
-            font-size: 3.5rem;
+            font-size: 4rem;
             margin: 0;
             background: linear-gradient(to right, var(--accent-green), var(--accent-blue));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
 
-        h2, h3 { color: var(--accent-green); }
-        
-        .tagline {
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            margin-top: 0.5rem;
+        .tagline { font-size: 1.2rem; color: var(--text-muted); margin-top: 0.5rem; }
+
+        /* Main Hub Buttons */
+        .hub-controls {
+            display: flex;
+            gap: 2rem;
+            z-index: 10;
         }
 
-        main {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        .card-panel {
+        .hub-btn {
             background: var(--surface-color);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-
-        /* Buttons */
-        .btn {
-            background: var(--accent-blue);
+            border: 2px solid transparent;
             color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
+            padding: 1.5rem 3rem;
+            border-radius: 12px;
+            font-size: 1.5rem;
             font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
-        .btn:hover { background: #2563eb; transform: translateY(-2px); }
-        
-        .btn-floating {
-            position: fixed;
-            bottom: 2rem;
-            border-radius: 50px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-            z-index: 100;
-        }
+        .hub-btn.events { border-color: var(--accent-yellow); color: var(--accent-yellow); }
+        .hub-btn.events:hover { background: var(--accent-yellow); color: #000; transform: translateY(-5px); }
 
-        .btn-draw { right: 15rem; background: var(--accent-yellow); color: #000; }
-        .btn-draw:hover { background: #d97706; }
-        
-        .btn-drawer { right: 2rem; }
+        .hub-btn.proteins { border-color: var(--accent-blue); color: var(--accent-blue); }
+        .hub-btn.proteins:hover { background: var(--accent-blue); color: #fff; transform: translateY(-5px); }
 
         /* Overlays & Modals */
         .overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            opacity: 0;
-            visibility: hidden;
-            transition: 0.3s ease;
-            z-index: 999;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+            opacity: 0; visibility: hidden; transition: 0.3s ease; z-index: 999;
         }
-
         .overlay.active { opacity: 1; visibility: visible; }
 
-        /* Event Card Modal */
+        /* Random Event Modal */
         #event-modal {
-            position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -40%);
-            width: 90%;
-            max-width: 400px;
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -40%);
+            width: 90%; max-width: 450px;
             background: linear-gradient(145deg, #1e293b, #0f172a);
-            border: 2px solid var(--accent-yellow);
-            border-radius: 12px;
-            padding: 2rem;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
+            border: 2px solid var(--accent-yellow); border-radius: 12px;
+            padding: 2rem; z-index: 1002; opacity: 0; visibility: hidden;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.8); text-align: center;
+        }
+        #event-modal.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%); }
+        #event-title { color: var(--accent-yellow); margin-top: 0; font-size: 1.8rem; }
+        #event-effect { font-size: 1.1rem; margin: 1.5rem 0; line-height: 1.5; color: white; }
+        #event-science { font-size: 0.95rem; color: var(--text-muted); font-style: italic; margin-bottom: 2rem; }
+
+        /* Drawers */
+        .drawer {
+            position: fixed; top: 0; width: 400px; max-width: 90vw; height: 100%;
+            background: #1e293b; box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000; display: flex; flex-direction: column;
         }
 
-        #event-modal.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translate(-50%, -50%);
-        }
+        .drawer.left { left: 0; transform: translateX(-100%); border-right: 2px solid var(--accent-yellow); }
+        .drawer.left.open { transform: translateX(0); }
 
-        #event-title { color: var(--accent-yellow); margin-top: 0; font-size: 1.5rem; }
-        #event-effect { font-size: 1.1rem; margin: 1.5rem 0; line-height: 1.5; }
-        #event-science { font-size: 0.9rem; color: var(--text-muted); font-style: italic; margin-bottom: 2rem; }
-
-        /* Card Drawer */
-        #card-drawer {
-            position: fixed;
-            top: 0; right: -450px; width: 400px; height: 100%;
-            background: #1e293b;
-            border-left: 2px solid var(--accent-blue);
-            box-shadow: -5px 0 25px rgba(0,0,0,0.5);
-            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-        }
-
-        #card-drawer.open { right: 0; }
+        .drawer.right { right: 0; transform: translateX(100%); border-left: 2px solid var(--accent-blue); }
+        .drawer.right.open { transform: translateX(0); }
 
         .drawer-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2);
         }
-
-        .drawer-header h3 { margin: 0; color: white; }
+        .drawer-header h3 { margin: 0; color: white; font-size: 1.5rem; }
         
-        .close-btn {
-            background: none; border: none; color: var(--text-muted);
-            font-size: 1.5rem; cursor: pointer;
-        }
+        .close-btn { background: none; border: none; color: var(--text-muted); font-size: 2rem; cursor: pointer; line-height: 1; }
         .close-btn:hover { color: white; }
 
-        .drawer-content {
-            padding: 1.5rem; overflow-y: auto; display: flex;
-            flex-direction: column; gap: 1rem;
+        .drawer-actions { padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        
+        .action-btn {
+            width: 100%; padding: 0.75rem; border-radius: 8px; border: none;
+            font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.2s;
         }
+        .action-btn.yellow { background: var(--accent-yellow); color: #000; }
+        .action-btn.yellow:hover { background: #d97706; }
+
+        .drawer-content {
+            padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; flex-grow: 1;
+        }
+        .drawer-content::-webkit-scrollbar { width: 8px; }
+        .drawer-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
 
         /* Game Cards UI */
         .game-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px; padding: 1rem; transition: transform 0.2s;
         }
+        .game-card:hover { transform: scale(1.02); border-color: rgba(255,255,255,0.3); }
 
-        .game-card h4 { margin: 0 0 0.5rem 0; color: var(--accent-green); font-size: 1.2rem; }
-        .game-card .cost { font-size: 0.85rem; color: var(--accent-red); font-weight: bold; margin-bottom: 0.5rem; }
-        .game-card .effect { font-size: 0.95rem; margin-bottom: 0.5rem; }
-        .game-card .lore { font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
+        /* Specific Card Styles */
+        .event-card h4 { margin: 0 0 0.5rem 0; color: var(--accent-yellow); font-size: 1.2rem; }
+        .event-card .effect { font-size: 0.95rem; margin-bottom: 0.5rem; color: #f1f5f9;}
+        .event-card .lore { font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
 
-        /* Info Grid */
-        .grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;
-        }
+        .protein-card h4 { margin: 0 0 0.5rem 0; color: var(--accent-blue); font-size: 1.2rem; }
+        .protein-card .cost { font-size: 0.85rem; color: var(--accent-green); font-weight: bold; margin-bottom: 0.5rem; display: inline-block; padding: 0.2rem 0.5rem; background: rgba(16, 185, 129, 0.1); border-radius: 4px; }
+        .protein-card .effect { font-size: 0.95rem; margin-bottom: 0.5rem; color: #f1f5f9; }
+        .protein-card .lore { font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
+
     </style>
 </head>
 <body>
 
     <header>
         <h1>Cell City</h1>
-        <div class="tagline">Cooperative Hidden-Role Biology Simulator</div>
+        <div class="tagline">Digital Card Deck & Tracker</div>
     </header>
 
-    <main>
-        <section class="card-panel">
-            <h2>Overview</h2>
-            <p>You play as cell scientists operating within a gigantic model cell, remotely piloting organelles to keep it alive. You all win together if the cell stays healthy and completes enough useful proteins before time runs out.</p>
-            <p>Beware: One player may secretly be the <strong>Virus</strong>, trying to push the cell toward collapse by misusing organelles and letting Waste build up.</p>
-        </section>
-
-        <section class="card-panel">
-            <h2>Core Mechanics</h2>
-            <div class="grid">
-                <div>
-                    <h3>1. Resource Flow</h3>
-                    <p>Convert Glucose into ATP, and use ATP and Amino Acids to synthesize Proteins. Watch out for Waste by-products!</p>
-                </div>
-                <div>
-                    <h3>2. Movement & Actions</h3>
-                    <p>Walk to an organelle, run its function, then move on. You are not locked to a single organelle.</p>
-                </div>
-                <div>
-                    <h3>3. The Waste Tower</h3>
-                    <p>Every action produces waste. If the Waste Tower reaches 12 discs, the cell undergoes lysis and the Virus wins.</p>
-                </div>
-                <div>
-                    <h3>4. Cell Scan</h3>
-                    <p>Use Immunity Tokens to initiate a table-wide vote to eject a suspected Virus. Be careful—wrongly accusing a healthy scientist damages the cell!</p>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <button class="btn btn-floating btn-draw" onclick="drawRandomEvent()">⚡ Draw Event Card</button>
-    <button class="btn btn-floating btn-drawer" onclick="toggleDrawer()">🃏 Open Protein Cards</button>
+    <div class="hub-controls">
+        <button class="hub-btn events" onclick="toggleDrawer('left-drawer')">
+            ⚡ Event Cards
+        </button>
+        <button class="hub-btn proteins" onclick="toggleDrawer('right-drawer')">
+            🧬 Instruction Cards
+        </button>
+    </div>
 
     <div id="main-overlay" class="overlay" onclick="closeAll()"></div>
 
@@ -237,86 +177,125 @@
         <h3 id="event-title">Event Name</h3>
         <div id="event-effect"><strong>Effect:</strong> Something happens here.</div>
         <div id="event-science">Science Snap: The biological reason why.</div>
-        <button class="btn" style="background: var(--surface-color); border: 1px solid var(--accent-yellow); color: var(--accent-yellow);" onclick="closeAll()">Acknowledge</button>
+        <button class="action-btn yellow" onclick="closeModal()">Acknowledge</button>
     </div>
 
-    <div id="card-drawer">
+    <div id="left-drawer" class="drawer left">
         <div class="drawer-header">
-            <h3>Instruction Cards</h3>
-            <button class="close-btn" onclick="toggleDrawer()">&times;</button>
+            <h3>Event Deck</h3>
+            <button class="close-btn" onclick="toggleDrawer('left-drawer')">&times;</button>
         </div>
-        <div class="drawer-content">
-            
-            <div class="game-card">
-                <h4>Hemoglobin</h4>
-                <div class="cost">Cost: 3 AA, 1 ATP</div>
-                <div class="effect"><strong>Effect:</strong> +5 Cell Life; gain 1 ATP at the start of the next round.</div>
-                <div class="lore">Science: Carries oxygen in blood, improving energy supply.</div>
-            </div>
-
-            <div class="game-card">
-                <h4>Insulin</h4>
-                <div class="cost">Cost: 2 AA, 1 ATP</div>
-                <div class="effect"><strong>Effect:</strong> +4 Cell Life; immediately give 1 Glucose to up to 2 different players.</div>
-                <div class="lore">Science: Helps cells take up glucose.</div>
-            </div>
-
-            <div class="game-card">
-                <h4>Membrane Channel Protein</h4>
-                <div class="cost">Cost: 2 AA, 1 ATP</div>
-                <div class="effect"><strong>Effect:</strong> +3 Cell Life; for the rest of this round, each Grab Bag Pull may discard one Toxin for free.</div>
-                <div class="lore">Science: Channels let specific substances cross membranes safely.</div>
-            </div>
-
+        <div class="drawer-actions">
+            <button class="action-btn yellow" onclick="drawRandomEvent()">🎲 Draw Random Event</button>
         </div>
+        <div class="drawer-content" id="event-list">
+            </div>
+    </div>
+
+    <div id="right-drawer" class="drawer right">
+        <div class="drawer-header">
+            <h3>Instruction Deck</h3>
+            <button class="close-btn" onclick="toggleDrawer('right-drawer')">&times;</button>
+        </div>
+        <div class="drawer-content" id="protein-list">
+            </div>
     </div>
 
     <script>
-        // Game Data: Event Cards
+        // Game Data Arrays parsed directly from the GDD
         const eventCards = [
-            {
-                title: "Nutrient Rush",
-                effect: "Each player gains 1 Glucose from the supply. Add 1 Waste to the common pool.",
-                science: "Science Snap: After a meal, blood sugar spikes and cells get a short nutrient surplus."
-            },
-            {
-                title: "Glucose Crash",
-                effect: "Every player discards 1 Glucose (if able). If a player has none, Cell Life −1.",
-                science: "Science Snap: Long gaps between meals can leave cells short of fuel."
-            },
-            {
-                title: "Adrenaline Surge",
-                effect: "This round, Make Energy yields +1 extra ATP (2 Glucose → 4 ATP) for everyone. At End-of-Round Check, add 2 Waste to the tower.",
-                science: "Science Snap: Stress hormones push mitochondria to produce energy faster, but also increase by-products."
-            },
-            {
-                title: "Membrane Breach",
-                effect: "Immediately add 3 Waste to the tower. Then players must spend a total of 3 ATP to 'seal' the breach. If they can’t, add +2 Waste more and Cell Life −2.",
-                science: "Science Snap: A damaged membrane leaks ions and molecules, harming the cell."
-            },
-            {
-                title: "Viral Protease Attack",
-                effect: "Each player discards 1 completed Protein if they have any. Then Cell Life −3.",
-                science: "Science Snap: Viruses use enzymes to cut host proteins and repurpose cell machinery."
-            },
-            {
-                title: "Autophagy Cleanup",
-                effect: "Remove 4 Waste from the tower and +2 Cell Life. Players must collectively discard 2 resources (any types).",
-                science: "Science Snap: Cells sometimes break down their own parts to recycle materials and survive."
-            }
+            { title: "Nutrient Rush", effect: "Each player gains 1 Glucose from the supply. Add 1 Waste to the common pool.", science: "After a meal, blood sugar spikes and cells get a short nutrient surplus." },
+            { title: "Glucose Crash", effect: "Every player discards 1 Glucose (if able). If a player has none, Cell Life −1.", science: "Long gaps between meals can leave cells short of fuel." },
+            { title: "Adrenaline Surge", effect: "This round, Make Energy at Power Plant yields +1 extra ATP (2 Glucose → 4 ATP) for everyone. At End-of-Round Check, add 2 Waste to the tower.", science: "Stress hormones push mitochondria to produce energy faster, but also increase by-products." },
+            { title: "Hypotonic Flood", effect: "Each player gains 1 random resource from the Grab Bag (ignore Toxins, redraw). Then add 2 Waste to the tower.", science: "Water rushing into a cell can swell it; more transport and repair strain the system." },
+            { title: "Hypertonic Drought", effect: "Each player discards 1 resource of their choice. Cell Life −2.", science: "In a salty environment, cells lose water and shrink, stressing their functions." },
+            { title: "Mitochondrial Boost", effect: "First 2 players who use Make Energy this round also heal +1 Cell Life each time they do it.", science: "Healthy mitochondria improve overall cell fitness." },
+            { title: "Mitochondrial Failure", effect: "This round, Make Energy yields only 2 ATP instead of 3, but still adds 1 Waste. At End of Round, Cell Life −2.", science: "Mitochondrial diseases reduce ATP output while still producing harmful by-products." },
+            { title: "Protein Misfolding Crisis", effect: "The next failed Protein Snap this round adds +2 extra Waste and Cell Life −2. Mark with a token.", science: "Misfolded proteins can clump and damage cells." },
+            { title: "Chaperone Rescue", effect: "The next failed Protein Snap this round does not add extra Waste and only reduces Cell Life by 1.", science: "Chaperone proteins help misfolded proteins refold or be safely destroyed." },
+            { title: "Membrane Breach", effect: "Immediately add 3 Waste to the tower. Then players must spend a total of 3 ATP (any mix) to “seal” the breach. If they can’t, add +2 Waste more and Cell Life −2.", science: "A damaged membrane leaks ions and molecules, harming the cell." },
+            { title: "Antioxidant Shield", effect: "Remove 2 Waste from the tower and +1 Cell Life. This round, whenever a player gains Waste from a Toxin, reduce it by 1 (minimum 0).", science: "Antioxidants help neutralise reactive molecules before they cause damage." },
+            { title: "Viral Protease Attack", effect: "Each player discards 1 completed Protein if they have any. Then Cell Life −3.", science: "Viruses use enzymes to cut host proteins and repurpose cell machinery." },
+            { title: "Immune Boost", effect: "Give 1 Immunity token to two different players of the group’s choice. Cell Life +2.", science: "Vaccination or prior exposure primes the immune system." },
+            { title: "Ribosome Strike", effect: "This round, Build Protein costs +1 AA (extra amino acid) for every protein.", science: "If ribosomes malfunction, assembling proteins becomes inefficient." },
+            { title: "Smooth ER Detox", effect: "Immediately remove 3 Waste from the tower. The first player to visit the Recycling Yard this round removes +2 extra Waste.", science: "Smooth ER and related organelles help process and remove toxins." },
+            { title: "Crowded Cytoplasm", effect: "If 3 or more pawns share any single zone at any time this round, each action in that zone costs +1 ATP until at least one pawn leaves.", science: "Crowding can slow diffusion and reactions in cells." },
+            { title: "DNA Damage Alarm", effect: "Place a “DNA Damage” marker on Nucleus. Until end of next round, each Get Blueprint causes Cell Life −1 unless player spends 1 extra ATP.", science: "DNA damage triggers repair pathways that consume energy." },
+            { title: "Successful DNA Repair", effect: "Remove any “DNA Damage” marker. Cell Life +3.", science: "Effective repair restores normal function and prevents cell death." },
+            { title: "Lysosome Leak", effect: "Immediately add 2 Waste to the tower and Cell Life −2. The first Clean Waste action this round removes +2 extra Waste.", science: "If lysosomes rupture, their enzymes can damage the cell before cleanup." },
+            { title: "Light Storm (Plant)", effect: "Place 3 Light tokens on Solar Array. First 2 Photosynthesise actions this round also give +1 Cell Life each.", science: "Strong sunlight boosts photosynthesis up to a point." },
+            { title: "Shade / Nightfall (Plant)", effect: "Remove all Light tokens from Solar Array. No new Light tokens added until next round. Cell Life −1.", science: "Without light, plants rely on stored energy." },
+            { title: "Toxin Spill", effect: "Add 2 Toxin tokens to the Grab Bag. Immediately add 2 Waste to the tower.", science: "Environmental pollutants increase the burden on detox pathways." },
+            { title: "Fresh Oxygen", effect: "Remove 1 Waste and give each player 1 ATP from the supply.", science: "Good oxygen supply supports efficient respiration." },
+            { title: "Checkpoint Pause", effect: "This round, Cell Life cannot go below 10 or above 25.", science: "Cell cycle checkpoints pause division until conditions improve." },
+            { title: "Autophagy Cleanup", effect: "Remove 4 Waste from the tower and +2 Cell Life. Players must collectively discard 2 resources.", science: "Cells sometimes break down their own parts to recycle materials and survive." }
         ];
 
-        // UI Functions
-        function toggleDrawer() {
-            const drawer = document.getElementById('card-drawer');
+        const proteinCards = [
+            { title: "Hemoglobin", cost: "3 AA, 1 ATP", effect: "+5 Cell Life; gain 1 ATP at the start of the next round.", science: "Carries oxygen in blood, improving energy supply." },
+            { title: "Insulin", cost: "2 AA, 1 ATP", effect: "+4 Cell Life; immediately give 1 Glucose to up to 2 different players from the supply.", science: "Helps cells take up glucose." },
+            { title: "Membrane Channel Protein", cost: "2 AA, 1 ATP", effect: "+3 Cell Life; for the rest of this round, each Grab Bag Pull at Membrane Gate may discard one Toxin for free.", science: "Channels let specific substances cross membranes safely." },
+            { title: "Antibody", cost: "1 AA, 1 ATP", effect: "+3 Cell Life; gain 2 Immunity tokens distributed as you like.", science: "Antibodies help target pathogens for destruction." },
+            { title: "Digestive Enzyme", cost: "1 AA, 2 ATP", effect: "+3 Cell Life; immediately remove 3 Waste from the tower.", science: "Enzymes in lysosomes break down waste material." },
+            { title: "Collagen", cost: "3 AA", effect: "+4 Cell Life; each future protein you complete gives +1 extra Life.", science: "A structural protein that supports tissues." },
+            { title: "Keratin", cost: "2 AA", effect: "+3 Cell Life; ignore the next negative Event that targets a single player.", science: "Provides protective layers in hair, nails, and skin." },
+            { title: "Muscle Actin–Myosin Complex", cost: "3 AA, 2 ATP", effect: "+6 Cell Life; this round, all actions cost 0 ATP for the builder.", science: "Actin and myosin convert chemical energy into motion." },
+            { title: "Receptor Protein", cost: "2 AA, 1 ATP", effect: "+3 Cell Life; once this round, you may peek at the top Event card and either keep it on top or place it at the bottom.", science: "Receptors detect external signals and help cells respond." },
+            { title: "Transporter Pump", cost: "2 AA, 2 ATP", effect: "+4 Cell Life; immediately move 1 resource token from any player to any other player.", science: "Active transport uses ATP to move ions against gradients." },
+            { title: "Hormone Signal Protein", cost: "2 AA, 1 ATP", effect: "+4 Cell Life; choose one player – they may take 1 extra action this turn (once only).", science: "Hormones coordinate activities between tissues." },
+            { title: "DNA Repair Enzyme", cost: "2 AA, 1 ATP", effect: "+4 Cell Life; remove any DNA Damage marker and cancel its penalties.", science: "Repair enzymes maintain genome stability." },
+            { title: "Channel Aquaporin", cost: "1 AA", effect: "+2 Cell Life; the next Hypotonic Flood or Hypertonic Drought Event that appears affects you half as much.", science: "Aquaporins control water flow across membranes." },
+            { title: "Pigment Melanin", cost: "1 AA, 2 ATP", effect: "+3 Cell Life; you are immune to the next Event that targets “one random player”.", science: "Melanin protects against UV damage." },
+            { title: "Antioxidant Enzyme", cost: "1 AA, 1 ATP", effect: "+3 Cell Life; remove 1 Waste immediately and the next time you would add Waste from an Event, reduce it by 1.", science: "These enzymes neutralise reactive oxygen species." },
+            { title: "Clotting Factor Protein", cost: "2 AA, 1 ATP", effect: "+3 Cell Life; once this game, when an Event would reduce Cell Life by 3 or more, reduce it by 2 instead.", science: "Clotting factors quickly stop bleeding and limit damage." },
+            { title: "Ion Channel", cost: "2 AA, 1 ATP", effect: "+3 Cell Life; you may immediately move your pawn up to 2 zones for free, even outside your turn.", science: "Ion channels allow rapid electrical signalling." },
+            { title: "Storage Protein", cost: "1 AA, 1 ATP", effect: "+2 Cell Life; you may keep 1 extra resource token in a “bound” slot that cannot be stolen or traded.", science: "Storage proteins safely store important ions or molecules." },
+            { title: "Signal Scaffold Protein", cost: "2 AA, 1 ATP", effect: "+3 Cell Life; Healthy players may openly show one Instruction Card each without giving info to the Virus.", science: "Scaffold proteins organise signalling complexes to make responses efficient." },
+            { title: "Photosynthetic Enzyme Complex", cost: "2 AA, 1 ATP, 1 Light", effect: "+5 Cell Life; immediately gain 2 Glucose and remove 2 Waste.", science: "Photosystems capture light and drive sugar production." }
+        ];
+
+        // Initialization: Render all cards into the drawers
+        function renderCards() {
+            const eventList = document.getElementById('event-list');
+            const proteinList = document.getElementById('protein-list');
+
+            eventCards.forEach(card => {
+                eventList.innerHTML += `
+                    <div class="game-card event-card">
+                        <h4>${card.title}</h4>
+                        <div class="effect"><strong>Effect:</strong> ${card.effect}</div>
+                        <div class="lore">Science Snap: ${card.science}</div>
+                    </div>
+                `;
+            });
+
+            proteinCards.forEach(card => {
+                proteinList.innerHTML += `
+                    <div class="game-card protein-card">
+                        <h4>${card.title}</h4>
+                        <div class="cost">Cost: ${card.cost}</div>
+                        <div class="effect"><strong>Effect:</strong> ${card.effect}</div>
+                        <div class="lore">Science: ${card.science}</div>
+                    </div>
+                `;
+            });
+        }
+
+        // Logic Functions
+        function toggleDrawer(drawerId) {
+            const drawer = document.getElementById(drawerId);
             const overlay = document.getElementById('main-overlay');
             const isOpen = drawer.classList.contains('open');
             
-            if (isOpen) {
-                closeAll();
-            } else {
+            // If opening a new drawer, close everything else first
+            document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
+            document.getElementById('event-modal').classList.remove('active');
+
+            if (!isOpen) {
                 drawer.classList.add('open');
                 overlay.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
             }
         }
 
@@ -328,18 +307,33 @@
             // Populate Modal
             document.getElementById('event-title').innerText = card.title;
             document.getElementById('event-effect').innerHTML = `<strong>Effect:</strong> ${card.effect}`;
-            document.getElementById('event-science').innerText = card.science;
+            document.getElementById('event-science').innerText = `Science Snap: ${card.science}`;
 
+            // Hide the drawer so the modal is clear
+            document.getElementById('left-drawer').classList.remove('open');
+            
             // Show Modal & Overlay
             document.getElementById('event-modal').classList.add('active');
             document.getElementById('main-overlay').classList.add('active');
         }
 
+        function closeModal() {
+            document.getElementById('event-modal').classList.remove('active');
+            // Check if any drawer is open, if not, remove overlay
+            const anyDrawerOpen = document.querySelector('.drawer.open');
+            if(!anyDrawerOpen) {
+                document.getElementById('main-overlay').classList.remove('active');
+            }
+        }
+
         function closeAll() {
-            document.getElementById('card-drawer').classList.remove('open');
+            document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
             document.getElementById('event-modal').classList.remove('active');
             document.getElementById('main-overlay').classList.remove('active');
         }
+
+        // Run on load
+        window.onload = renderCards;
     </script>
 </body>
 </html>
