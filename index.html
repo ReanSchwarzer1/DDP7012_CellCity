@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cell City - Card Hub</title>
+    <title>Cell City - Digital Companion</title>
     <style>
         :root {
             --bg-color: #0b1120;
@@ -12,7 +12,7 @@
             --accent-blue: #3b82f6;
             --accent-red: #ef4444;
             --accent-yellow: #f59e0b;
-            --accent-purple: #8b5cf6;
+            --accent-brown: #78350f;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
         }
@@ -24,19 +24,21 @@
             color: var(--text-main);
             background-image: radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.08), transparent 40%),
                               radial-gradient(circle at 80% 30%, rgba(59, 130, 246, 0.08), transparent 40%);
-            overflow: hidden; /* Prevent background scrolling */
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
+            padding: 2rem 1rem;
+            box-sizing: border-box;
+            overflow-x: hidden;
         }
 
         /* Layout & Typography */
-        header { text-align: center; margin-bottom: 3rem; }
+        header { text-align: center; margin-bottom: 2rem; }
         
         h1 {
-            font-size: 4rem;
+            font-size: clamp(2.5rem, 5vw, 4rem);
             margin: 0;
             background: linear-gradient(to right, var(--accent-green), var(--accent-blue));
             -webkit-background-clip: text;
@@ -44,29 +46,79 @@
             text-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
 
-        .tagline { font-size: 1.2rem; color: var(--text-muted); margin-top: 0.5rem; }
+        .tagline { font-size: clamp(1rem, 2vw, 1.2rem); color: var(--text-muted); margin-top: 0.5rem; }
+
+        /* Trackers Dashboard */
+        .dashboard {
+            display: flex;
+            gap: 2rem;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tracker-card {
+            background: var(--surface-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            flex: 1;
+            min-width: 300px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tracker-card h3 { margin: 0 0 1rem 0; font-size: 1.3rem; }
+        
+        /* Cell Life Bar */
+        .life-container { width: 100%; height: 24px; background: rgba(0,0,0,0.5); border-radius: 12px; overflow: hidden; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.1); }
+        .life-fill { height: 100%; background: var(--accent-green); width: 66.6%; transition: all 0.3s ease; }
+        
+        /* Waste Tower (Segmented) */
+        .tower-container { display: flex; flex-direction: column-reverse; gap: 4px; height: 120px; width: 60px; margin-bottom: 1rem; }
+        .tower-segment { flex: 1; background: rgba(0,0,0,0.5); border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s; }
+        .tower-segment.filled { background: var(--accent-brown); border-color: var(--accent-red); box-shadow: 0 0 8px var(--accent-red); }
+
+        .tracker-controls { display: flex; align-items: center; gap: 1rem; }
+        .tracker-btn {
+            background: rgba(255,255,255,0.1); border: none; color: white; width: 40px; height: 40px; border-radius: 50%;
+            font-size: 1.5rem; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+        .tracker-btn:hover { background: rgba(255,255,255,0.2); }
+        .tracker-value { font-size: 1.5rem; font-weight: bold; min-width: 60px; text-align: center; }
 
         /* Main Hub Buttons */
         .hub-controls {
             display: flex;
-            gap: 2rem;
+            gap: 1.5rem;
             z-index: 10;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
         }
 
         .hub-btn {
             background: var(--surface-color);
             border: 2px solid transparent;
             color: white;
-            padding: 1.5rem 3rem;
+            padding: 1.2rem 2.5rem;
             border-radius: 12px;
-            font-size: 1.5rem;
+            font-size: clamp(1.2rem, 2.5vw, 1.5rem);
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.8rem;
+            flex: 1;
+            min-width: 250px;
+            max-width: 350px;
+            justify-content: center;
         }
 
         .hub-btn.events { border-color: var(--accent-yellow); color: var(--accent-yellow); }
@@ -78,29 +130,39 @@
         /* Overlays & Modals */
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
             opacity: 0; visibility: hidden; transition: 0.3s ease; z-index: 999;
         }
         .overlay.active { opacity: 1; visibility: visible; }
 
-        /* Random Event Modal */
-        #event-modal {
+        .modal {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -40%);
-            width: 90%; max-width: 450px;
             background: linear-gradient(145deg, #1e293b, #0f172a);
-            border: 2px solid var(--accent-yellow); border-radius: 12px;
-            padding: 2rem; z-index: 1002; opacity: 0; visibility: hidden;
+            border-radius: 12px; padding: 2rem; z-index: 1002; opacity: 0; visibility: hidden;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.8); text-align: center;
+            width: 90%; max-height: 90vh; overflow-y: auto;
         }
-        #event-modal.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%); }
-        #event-title { color: var(--accent-yellow); margin-top: 0; font-size: 1.8rem; }
-        #event-effect { font-size: 1.1rem; margin: 1.5rem 0; line-height: 1.5; color: white; }
-        #event-science { font-size: 0.95rem; color: var(--text-muted); font-style: italic; margin-bottom: 2rem; }
+        .modal.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%); }
+        
+        /* Specific Modals */
+        #event-modal { max-width: 450px; border: 2px solid var(--accent-yellow); }
+        #instruction-modal { max-width: 900px; border: 2px solid var(--accent-blue); }
+
+        .modal-title { margin-top: 0; font-size: 1.8rem; }
+        .modal-text { font-size: 1.1rem; margin: 1.5rem 0; line-height: 1.5; color: white; }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
 
         /* Drawers */
         .drawer {
-            position: fixed; top: 0; width: 400px; max-width: 90vw; height: 100%;
+            position: fixed; top: 0; width: 100%; max-width: 400px; height: 100%;
             background: #1e293b; box-shadow: 0 0 30px rgba(0,0,0,0.8);
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1000; display: flex; flex-direction: column;
@@ -124,17 +186,17 @@
         .drawer-actions { padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
         
         .action-btn {
-            width: 100%; padding: 0.75rem; border-radius: 8px; border: none;
+            width: 100%; padding: 0.85rem; border-radius: 8px; border: none;
             font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.2s;
         }
         .action-btn.yellow { background: var(--accent-yellow); color: #000; }
         .action-btn.yellow:hover { background: #d97706; }
+        .action-btn.blue { background: var(--accent-blue); color: #fff; }
+        .action-btn.blue:hover { background: #2563eb; }
 
         .drawer-content {
             padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; flex-grow: 1;
         }
-        .drawer-content::-webkit-scrollbar { width: 8px; }
-        .drawer-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
 
         /* Game Cards UI */
         .game-card {
@@ -153,14 +215,42 @@
         .protein-card .effect { font-size: 0.95rem; margin-bottom: 0.5rem; color: #f1f5f9; }
         .protein-card .lore { font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
 
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
     </style>
 </head>
 <body>
 
     <header>
         <h1>Cell City</h1>
-        <div class="tagline">Digital Card Deck & Tracker</div>
+        <div class="tagline">Digital Companion & Tracker</div>
     </header>
+
+    <div class="dashboard">
+        <div class="tracker-card" style="border-top: 3px solid var(--accent-green);">
+            <h3 style="color: var(--accent-green);">Cell Life (LP)</h3>
+            <div class="life-container">
+                <div class="life-fill" id="life-bar"></div>
+            </div>
+            <div class="tracker-controls">
+                <button class="tracker-btn" onclick="updateLife(-1)">-</button>
+                <div class="tracker-value" id="life-text">20/30</div>
+                <button class="tracker-btn" onclick="updateLife(1)">+</button>
+            </div>
+        </div>
+
+        <div class="tracker-card" style="border-top: 3px solid var(--accent-brown);">
+            <h3 style="color: #fbbf24;">Waste Tower</h3>
+            <div class="tower-container" id="waste-tower-visual">
+                </div>
+            <div class="tracker-controls">
+                <button class="tracker-btn" onclick="updateWaste(-1)">-</button>
+                <div class="tracker-value" id="waste-text">0/12</div>
+                <button class="tracker-btn" onclick="updateWaste(1)">+</button>
+            </div>
+        </div>
+    </div>
 
     <div class="hub-controls">
         <button class="hub-btn events" onclick="toggleDrawer('left-drawer')">
@@ -173,11 +263,19 @@
 
     <div id="main-overlay" class="overlay" onclick="closeAll()"></div>
 
-    <div id="event-modal">
-        <h3 id="event-title">Event Name</h3>
-        <div id="event-effect"><strong>Effect:</strong> Something happens here.</div>
-        <div id="event-science">Science Snap: The biological reason why.</div>
-        <button class="action-btn yellow" onclick="closeModal()">Acknowledge</button>
+    <div id="event-modal" class="modal">
+        <h3 class="modal-title" id="event-title" style="color: var(--accent-yellow);">Event Name</h3>
+        <div class="modal-text" id="event-effect"><strong>Effect:</strong> Something happens here.</div>
+        <div class="modal-text" id="event-science" style="font-size: 0.95rem; color: var(--text-muted); font-style: italic;">Science Snap: The biological reason why.</div>
+        <button class="action-btn yellow" onclick="closeAll()">Acknowledge</button>
+    </div>
+
+    <div id="instruction-modal" class="modal">
+        <h3 class="modal-title" style="color: var(--accent-blue);">Blueprint Options</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Choose 1 to keep, discard the other 2.</p>
+        <div class="card-grid" id="drawn-instructions-container">
+            </div>
+        <button class="action-btn blue" onclick="closeAll()" style="max-width: 200px; margin: 0 auto;">Done</button>
     </div>
 
     <div id="left-drawer" class="drawer left">
@@ -188,8 +286,7 @@
         <div class="drawer-actions">
             <button class="action-btn yellow" onclick="drawRandomEvent()">🎲 Draw Random Event</button>
         </div>
-        <div class="drawer-content" id="event-list">
-            </div>
+        <div class="drawer-content" id="event-list"></div>
     </div>
 
     <div id="right-drawer" class="drawer right">
@@ -197,12 +294,21 @@
             <h3>Instruction Deck</h3>
             <button class="close-btn" onclick="toggleDrawer('right-drawer')">&times;</button>
         </div>
-        <div class="drawer-content" id="protein-list">
-            </div>
+        <div class="drawer-actions">
+            <button class="action-btn blue" onclick="drawThreeInstructions()">🧬 Draw 3 Blueprints</button>
+        </div>
+        <div class="drawer-content" id="protein-list"></div>
     </div>
 
     <script>
-        // Game Data Arrays parsed directly from the GDD
+        // --- GAME STATE ---
+        let currentLife = 20;
+        const maxLife = 30;
+        
+        let currentWaste = 0;
+        const maxWaste = 12;
+
+        // --- GAME DATA ---
         const eventCards = [
             { title: "Nutrient Rush", effect: "Each player gains 1 Glucose from the supply. Add 1 Waste to the common pool.", science: "After a meal, blood sugar spikes and cells get a short nutrient surplus." },
             { title: "Glucose Crash", effect: "Every player discards 1 Glucose (if able). If a player has none, Cell Life −1.", science: "Long gaps between meals can leave cells short of fuel." },
@@ -254,7 +360,51 @@
             { title: "Photosynthetic Enzyme Complex", cost: "2 AA, 1 ATP, 1 Light", effect: "+5 Cell Life; immediately gain 2 Glucose and remove 2 Waste.", science: "Photosystems capture light and drive sugar production." }
         ];
 
-        // Initialization: Render all cards into the drawers
+        // --- TRACKER LOGIC ---
+        function initTrackers() {
+            // Setup Waste Tower Segments (12 total)
+            const tower = document.getElementById('waste-tower-visual');
+            tower.innerHTML = '';
+            for(let i = 0; i < maxWaste; i++) {
+                const segment = document.createElement('div');
+                segment.className = 'tower-segment';
+                segment.id = `waste-segment-${i+1}`;
+                tower.appendChild(segment);
+            }
+            updateLife(0); // Initialize UI
+            updateWaste(0); // Initialize UI
+        }
+
+        function updateLife(delta) {
+            currentLife = Math.max(0, Math.min(maxLife, currentLife + delta));
+            document.getElementById('life-text').innerText = `${currentLife}/${maxLife}`;
+            
+            const percent = (currentLife / maxLife) * 100;
+            const bar = document.getElementById('life-bar');
+            bar.style.width = `${percent}%`;
+
+            // Color logic
+            if (currentLife <= 10) { bar.style.background = 'var(--accent-red)'; }
+            else if (currentLife <= 15) { bar.style.background = 'var(--accent-yellow)'; }
+            else { bar.style.background = 'var(--accent-green)'; }
+        }
+
+        function updateWaste(delta) {
+            currentWaste = Math.max(0, Math.min(maxWaste, currentWaste + delta));
+            document.getElementById('waste-text').innerText = `${currentWaste}/${maxWaste}`;
+
+            // Update visual segments
+            for(let i = 1; i <= maxWaste; i++) {
+                const segment = document.getElementById(`waste-segment-${i}`);
+                if (i <= currentWaste) {
+                    segment.classList.add('filled');
+                } else {
+                    segment.classList.remove('filled');
+                }
+            }
+        }
+
+        // --- CARD & UI LOGIC ---
         function renderCards() {
             const eventList = document.getElementById('event-list');
             const proteinList = document.getElementById('protein-list');
@@ -281,59 +431,65 @@
             });
         }
 
-        // Logic Functions
         function toggleDrawer(drawerId) {
             const drawer = document.getElementById(drawerId);
             const overlay = document.getElementById('main-overlay');
             const isOpen = drawer.classList.contains('open');
             
-            // If opening a new drawer, close everything else first
-            document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
-            document.getElementById('event-modal').classList.remove('active');
+            closeAll(); // Close everything first
 
             if (!isOpen) {
                 drawer.classList.add('open');
                 overlay.classList.add('active');
-            } else {
-                overlay.classList.remove('active');
             }
         }
 
         function drawRandomEvent() {
-            // Pick a random event
-            const randomIndex = Math.floor(Math.random() * eventCards.length);
-            const card = eventCards[randomIndex];
-
-            // Populate Modal
+            const card = eventCards[Math.floor(Math.random() * eventCards.length)];
             document.getElementById('event-title').innerText = card.title;
             document.getElementById('event-effect').innerHTML = `<strong>Effect:</strong> ${card.effect}`;
             document.getElementById('event-science').innerText = `Science Snap: ${card.science}`;
 
-            // Hide the drawer so the modal is clear
             document.getElementById('left-drawer').classList.remove('open');
-            
-            // Show Modal & Overlay
             document.getElementById('event-modal').classList.add('active');
             document.getElementById('main-overlay').classList.add('active');
         }
 
-        function closeModal() {
-            document.getElementById('event-modal').classList.remove('active');
-            // Check if any drawer is open, if not, remove overlay
-            const anyDrawerOpen = document.querySelector('.drawer.open');
-            if(!anyDrawerOpen) {
-                document.getElementById('main-overlay').classList.remove('active');
-            }
+        function drawThreeInstructions() {
+            // Shuffle and pick 3 unique
+            let shuffled = [...proteinCards].sort(() => 0.5 - Math.random());
+            let drawn = shuffled.slice(0, 3);
+            
+            const container = document.getElementById('drawn-instructions-container');
+            container.innerHTML = ''; // Clear previous
+
+            drawn.forEach(card => {
+                container.innerHTML += `
+                    <div class="game-card protein-card" style="background: rgba(255,255,255,0.05);">
+                        <h4>${card.title}</h4>
+                        <div class="cost">Cost: ${card.cost}</div>
+                        <div class="effect"><strong>Effect:</strong> ${card.effect}</div>
+                        <div class="lore">Science: ${card.science}</div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('right-drawer').classList.remove('open');
+            document.getElementById('instruction-modal').classList.add('active');
+            document.getElementById('main-overlay').classList.add('active');
         }
 
         function closeAll() {
             document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
-            document.getElementById('event-modal').classList.remove('active');
+            document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
             document.getElementById('main-overlay').classList.remove('active');
         }
 
         // Run on load
-        window.onload = renderCards;
+        window.onload = () => {
+            renderCards();
+            initTrackers();
+        };
     </script>
 </body>
 </html>
